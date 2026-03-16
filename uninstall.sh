@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-PLUGIN_NAME="alfred-dev"
+PLUGIN_NAME="almundo-claude"
 CLAUDE_DIR="${HOME}/.claude"
 PLUGINS_DIR="${CLAUDE_DIR}/plugins"
 MARKETPLACE_DIR="${PLUGINS_DIR}/marketplaces/${PLUGIN_NAME}"

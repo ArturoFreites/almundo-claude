@@ -7,7 +7,7 @@
 
 $ErrorActionPreference = 'Stop'
 
-$PluginName = "alfred-dev"
+$PluginName = "almundo-claude"
 $ClaudeDir = Join-Path $env:USERPROFILE ".claude"
 $PluginsDir = Join-Path $ClaudeDir "plugins"
 # La ruta de cache sigue la convencion de Claude Code: cache/<marketplace>/<plugin>/<version>.

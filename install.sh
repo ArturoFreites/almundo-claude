@@ -18,8 +18,8 @@
 
 set -euo pipefail
 
-REPO="686f6c61/alfred-dev"
-PLUGIN_NAME="alfred-dev"
+REPO="ArturoFreites/almundo-claude"
+PLUGIN_NAME="almundo-claude"
 VERSION="0.4.2"
 
 # -- Colores ----------------------------------------------------------------

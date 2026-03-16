@@ -19,7 +19,7 @@ El plugin detecta automáticamente el stack tecnológico del proyecto (Node.js, 
 Una sola línea. El script clona el repositorio en la caché de plugins de Claude Code y lo registra automáticamente:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/686f6c61/alfred-dev/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ArturoFreites/almundo-claude/main/install.sh | bash
 ```
 
 Reinicia Claude Code después de instalar y verifica con:
@@ -31,7 +31,7 @@ Reinicia Claude Code después de instalar y verifica con:
 En Windows (PowerShell):
 
 ```powershell
-irm https://raw.githubusercontent.com/686f6c61/alfred-dev/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/ArturoFreites/almundo-claude/main/install.ps1 | iex
 ```
 
 Requisitos:
@@ -43,12 +43,12 @@ Para desinstalar:
 
 ```bash
 # macOS / Linux
-curl -fsSL https://raw.githubusercontent.com/686f6c61/alfred-dev/main/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ArturoFreites/almundo-claude/main/uninstall.sh | bash
 ```
 
 ```powershell
 # Windows
-irm https://raw.githubusercontent.com/686f6c61/alfred-dev/main/uninstall.ps1 | iex
+irm https://raw.githubusercontent.com/ArturoFreites/almundo-claude/main/uninstall.ps1 | iex
 ```
 
 ## Inicio rapido
@@ -371,4 +371,4 @@ MIT
 
 ---
 
-[Documentación completa](https://686f6c61.github.io/alfred-dev/) | [Código fuente](https://github.com/686f6c61/alfred-dev)
+[Documentación completa](https://686f6c61.github.io/alfred-dev/) | [Código fuente](https://github.com/ArturoFreites/almundo-claude)
