@@ -1,8 +1,8 @@
 # ---------------------------------------------------------------------------
-# Alfred Dev -- script de instalacion para Claude Code (Windows)
+# Almundo IA -- script de instalacion para Claude Code (Windows)
 #
 # Uso:
-#   irm https://raw.githubusercontent.com/686f6c61/alfred-dev/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/ArturoFreites/almundo-claude/main/install.ps1 | iex
 #
 # Que hace:
 #   1. Verifica que Claude Code esta instalado
@@ -50,9 +50,9 @@ if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
 # -- Instalacion ------------------------------------------------------------
 
 Write-Host ""
-Write-Host "Alfred Dev" -ForegroundColor White -NoNewline
+Write-Host "Almundo IA" -ForegroundColor White -NoNewline
 Write-Host " v$Version" -ForegroundColor DarkGray
-Write-Host "Plugin de ingenieria de software automatizada" -ForegroundColor DarkGray
+Write-Host "Plugin de ingenieria de software automatizada para Almundo" -ForegroundColor DarkGray
 Write-Host ""
 
 # -- 1. Registrar marketplace -----------------------------------------------
@@ -103,8 +103,8 @@ Write-Host ""
 Write-Host "Instalacion completada" -ForegroundColor Green
 Write-Host ""
 Write-Host "  Reinicia Claude Code y ejecuta:"
-Write-Host "  /alfred help" -ForegroundColor White
+Write-Host "  /almundo-ia help" -ForegroundColor White
 Write-Host ""
 Write-Host "  Repositorio: https://github.com/$Repo" -ForegroundColor DarkGray
-Write-Host "  Documentacion: https://alfred-dev.com" -ForegroundColor DarkGray
+Write-Host "  Documentacion base: https://686f6c61.github.io/alfred-dev/" -ForegroundColor DarkGray
 Write-Host ""

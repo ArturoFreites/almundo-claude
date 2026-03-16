@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------
-# Alfred Dev -- script de instalacion para Claude Code
+# Almundo IA -- script de instalacion para Claude Code
 #
 # Uso:
-#   curl -fsSL https://raw.githubusercontent.com/686f6c61/alfred-dev/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/ArturoFreites/almundo-claude/main/install.sh | bash
 #
 # Que hace:
 #   1. Verifica que Claude Code esta instalado
 #   2. Registra el marketplace del plugin con claude plugin marketplace add
 #   3. Instala el plugin con claude plugin install
-#   4. Listo para usar: /alfred help
+#   4. Listo para usar: /almundo-ia help
 #
 # El script delega toda la gestion en la CLI nativa de Claude Code
 # (claude plugin marketplace / claude plugin install) para garantizar
@@ -123,8 +123,8 @@ fi
 
 # -- Instalacion ------------------------------------------------------------
 
-printf "\n${BOLD}Alfred Dev${NC} ${DIM}v${VERSION}${NC}\n"
-printf "${DIM}Plugin de ingenieria de software automatizada${NC}\n\n"
+printf "\n${BOLD}Almundo IA${NC} ${DIM}v${VERSION}${NC}\n"
+printf "${DIM}Plugin de ingenieria de software automatizada para Almundo${NC}\n\n"
 
 # -- 1. Registrar marketplace -----------------------------------------------
 # Si ya existe, lo actualizamos eliminandolo primero para forzar un refresh
@@ -194,6 +194,6 @@ fi
 
 printf "\n${GREEN}${BOLD}Instalacion completada${NC}\n\n"
 printf "  Reinicia Claude Code y ejecuta:\n"
-printf "  ${BOLD}/alfred help${NC}\n\n"
+printf "  ${BOLD}/almundo-ia help${NC}\n\n"
 printf "  ${DIM}Repositorio: https://github.com/${REPO}${NC}\n"
-printf "  ${DIM}Documentacion: https://alfred-dev.com${NC}\n\n"
+printf "  ${DIM}Documentacion base: https://686f6c61.github.io/alfred-dev/${NC}\n\n"

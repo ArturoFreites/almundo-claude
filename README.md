@@ -25,7 +25,7 @@ curl -fsSL https://raw.githubusercontent.com/ArturoFreites/almundo-claude/main/i
 Reinicia Claude Code después de instalar y verifica con:
 
 ```bash
-/alfred help
+/almundo-ia help
 ```
 
 En Windows (PowerShell):
