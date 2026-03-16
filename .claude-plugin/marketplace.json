@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "almundo-claude",
+  "description": "Tu empresa de ingeniería de software en un plugin de Claude Code",
+  "owner": {
+    "name": "686f6c61"
+  },
+  "plugins": [
+    {
+      "name": "almundo-claude",
+      "description": "Plugin de ingeniería de software completa para Almundo IA: 17 agentes (9 de núcleo + 8 opcionales), 60 skills, memoria persistente, quality gates y compliance europeo integrado.",
+      "version": "0.4.2",
+      "source": "./",
+      "author": {
+        "name": "Almundo"
+      },
+      "category": "development",
+      "homepage": "https://github.com/almundo/almundo-claude"
+    }
+  ]
+}

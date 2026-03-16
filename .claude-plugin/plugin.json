@@ -1,0 +1,47 @@
+{
+  "name": "almundo-claude",
+  "description": "Plugin de ingeniería de software completa: 9 agentes de núcleo y 8 opcionales con personalidad propia, memoria persistente por proyecto, quality gates y flujos automatizados desde la idea hasta producción.",
+  "version": "0.4.2",
+  "author": {
+    "name": "686f6c61"
+  },
+  "homepage": "https://github.com/almundo/almundo-claude",
+  "repository": "https://github.com/almundo/almundo-claude",
+  "license": "MIT",
+  "keywords": ["sdlc", "agents", "security", "tdd", "devops", "qa", "product", "spanish", "seo", "ux", "data"],
+  "commands": [
+    "./commands/tutor.md",
+    "./commands/audit.md",
+    "./commands/config.md",
+    "./commands/feature.md",
+    "./commands/fix.md",
+    "./commands/help.md",
+    "./commands/ship.md",
+    "./commands/spike.md",
+    "./commands/status.md",
+    "./commands/update.md"
+  ],
+  "agents": [
+    "./agents/product-owner.md",
+    "./agents/architect.md",
+    "./agents/senior-dev.md",
+    "./agents/security-officer.md",
+    "./agents/qa-engineer.md",
+    "./agents/devops-engineer.md",
+    "./agents/tech-writer.md",
+    "./agents/project-manager.md",
+    "./agents/optional/data-engineer.md",
+    "./agents/optional/ux-reviewer.md",
+    "./agents/optional/performance-engineer.md",
+    "./agents/optional/github-manager.md",
+    "./agents/optional/seo-specialist.md",
+    "./agents/optional/copywriter.md",
+    "./agents/optional/librarian.md",
+    "./agents/optional/i18n-specialist.md"
+  ],
+  "skills": [
+    "./skills/calidad/incident-response/SKILL.md",
+    "./skills/devops/release-planning/SKILL.md",
+    "./skills/seguridad/dependency-strategy/SKILL.md"
+  ]
+}

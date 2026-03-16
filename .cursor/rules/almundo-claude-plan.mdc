@@ -1,0 +1,25 @@
+---
+description: Guía al agente para seguir el plan de fork privado y rebranding definido en docs/almundo-ia/PLAN.md.
+alwaysApply: false
+globs: docs/almundo-ia/PLAN.md
+---
+
+# Seguir el PLAN de Almundo IA
+
+Cuando trabajes sobre `docs/almundo-ia/PLAN.md` o sobre tareas relacionadas con el fork privado y rebranding:
+
+- Trata `docs/almundo-ia/PLAN.md` como **fuente de verdad** para:
+  - Estrategia de ramas y remotos (`origin` y `upstream`).
+  - Rebranding técnico a `almundo-claude`.
+  - Hardening y personalizaciones de seguridad.
+  - Flujo de actualización desde upstream.
+  - Roadmap de personalización avanzada (agentes, skills, hooks, memoria).
+
+## Comportamiento esperado
+
+- Antes de proponer cambios de alto nivel en el flujo de fork, rebranding o seguridad, revisa el contenido actual del PLAN.
+- Si detectas desviaciones entre el código y lo descrito en el PLAN:
+  - Señálalas explícitamente.
+  - Propón alinearlas, indicando impacto y pasos recomendados.
+- Evita redefinir desde cero el proceso de fork/actualización; extiende o refina el PLAN existente.
+

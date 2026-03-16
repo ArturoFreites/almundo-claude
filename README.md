@@ -1,1 +1,374 @@
-# almundo-claude
+# Almundo
+
+**Plugin de ingeniería de software automatizada para [Claude Code](https://docs.anthropic.com/en/docs/claude-code), adaptado para Almundo.**
+
+17 agentes especializados con personalidad propia (9 de nucleo + 8 opcionales), 60 skills en 13 dominios, memoria persistente de decisiones por proyecto, 5 flujos de trabajo con quality gates infranqueables, verificacion de evidencia automatica, modo autopilot y compliance europeo (RGPD, NIS2, CRA) integrado desde el diseno.
+
+[Documentación técnica original](https://686f6c61.github.io/alfred-dev/) -- [Instalar](#instalación) -- [Comandos](#comandos) -- [Arquitectura](#arquitectura)
+
+---
+
+## Qué es Almundo
+
+Almundo es un plugin que orquesta el ciclo completo de desarrollo de software a través de agentes autónomos. Cada agente tiene un rol concreto, un ámbito de actuación delimitado y quality gates que impiden avanzar a la siguiente fase sin cumplir los criterios de calidad. El sistema está diseñado para que ningún artefacto llegue a producción sin haber pasado por producto, arquitectura, desarrollo con TDD, revisión de seguridad, QA y documentación.
+
+El plugin detecta automáticamente el stack tecnológico del proyecto (Node.js, Python, Rust, Go, Ruby, Elixir, Java/Kotlin, PHP, C#/.NET, Swift) y adapta los artefactos generados al ecosistema real: frameworks, gestores de paquetes, convenciones de testing y estructura de directorios.
+
+## Instalación
+
+Una sola línea. El script clona el repositorio en la caché de plugins de Claude Code y lo registra automáticamente:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/686f6c61/alfred-dev/main/install.sh | bash
+```
+
+Reinicia Claude Code después de instalar y verifica con:
+
+```bash
+/alfred help
+```
+
+En Windows (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/686f6c61/alfred-dev/main/install.ps1 | iex
+```
+
+Requisitos:
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) instalado y configurado.
+- Python 3.10+ (para los hooks y el core; no necesario en Windows).
+- git (para la descarga del plugin).
+
+Para desinstalar:
+
+```bash
+# macOS / Linux
+curl -fsSL https://raw.githubusercontent.com/686f6c61/alfred-dev/main/uninstall.sh | bash
+```
+
+```powershell
+# Windows
+irm https://raw.githubusercontent.com/686f6c61/alfred-dev/main/uninstall.ps1 | iex
+```
+
+## Inicio rapido
+
+Una vez instalado, estos tres pasos muestran Almundo en acción:
+
+```bash
+# 1. Verificar que el plugin esta cargado
+/almundo-ia help
+
+# 2. Configurar el proyecto (detecta el stack automaticamente)
+/almundo-ia config
+
+# 3. Arrancar una funcionalidad de ejemplo
+/almundo-ia feature sistema de login con email y password
+```
+
+Almundo activará el flujo de 6 fases (producto, arquitectura, desarrollo, calidad, documentacion, entrega) y pedirá confirmacion en cada quality gate antes de avanzar. Para una tarea más rápida, prueba `/almundo-ia fix` con una descripcion del bug o `/almundo-ia spike` para investigar una tecnologia sin compromiso de implementacion.
+
+## Novedades en v0.4.2 (base alfred-dev)
+
+La v0.4.2 es un parche de robustez tras una auditoria exhaustiva del evidence guard, autopilot, loop iterativo e informes de sesion:
+
+| Novedad | Descripcion |
+|---------|-------------|
+| **Falso positivo "0 failures" corregido** | El patron de deteccion de fallos ya no considera "0 failures" como un fallo. |
+| **Gate de arquitectura corregida** | La fase de arquitectura ahora evalua seguridad correctamente (gate `usuario+seguridad`). |
+| **Patrones unificados** | `quality-gate.py` importa de `evidence_guard_lib.py` en lugar de mantener patrones propios que divergian. |
+| **Informes de sesiones parciales** | El stop-hook genera informe cuando una sesion se interrumpe, no solo cuando se completa. |
+| **Informes enriquecidos** | Los informes muestran modo (autopilot/interactivo), iteraciones por fase y version dinamica. |
+| **Evidencia en gates documentada** | Los comandos instruyen a Claude para verificar `alfred-evidence.json` antes de aprobar gates automaticas. |
+| **Loop iterativo documentado** | Los comandos `feature`, `fix` y `ship` incluyen instrucciones explicitas de reintento (max 5 por fase). |
+
+### Novedades de v0.4.1 (heredadas de alfred-dev)
+
+La v0.4.1 mejoro la experiencia de primer uso y corrigio la conexion entre el modo autopilot y los comandos:
+
+| Novedad | Descripcion |
+|---------|-------------|
+| **Configuracion inicial automatica** | Al usar Almundo IA por primera vez en un proyecto, pregunta si se quiere modo interactivo o autopilot. Sin pasos manuales, sin reinicios. |
+| **Autopilot conectado a los comandos** | Los comandos `feature`, `fix` y `ship` ahora comprueban el estado de autopilot y saltan las gates de usuario cuando esta activo. |
+
+### Novedades de v0.4.0 (heredadas de alfred-dev)
+
+La v0.4.0 incorporo cinco capacidades orientadas a fiabilidad, autonomia controlada y trazabilidad de resultados:
+
+| Novedad | Descripcion |
+|---------|-------------|
+| **Verificacion de evidencia** | El hook `evidence-guard.py` intercepta cada ejecucion de tests y registra si hubo exitos o fallos reales. Cuando un agente afirma que «los tests pasan», el orquestador verifica la evidencia registrada antes de aprobar la gate. Sin salida real de tests, no hay aprobacion. |
+| **Loop iterativo en fases** | Si una fase no supera su quality gate, el orquestador puede reintentar hasta 5 veces (`should_retry_phase`) antes de escalar al usuario. Cada reintento incluye el feedback del fallo anterior para que el agente corrija su enfoque. |
+| **Modo autopilot** | `run_flow_autopilot()` permite ejecutar flujos completos con aprobacion automatica de las gates de usuario, manteniendo las gates de seguridad y calidad intactas. El nivel de autonomia se configura por fase en `/alfred config`. |
+| **Informes de sesion** | Al finalizar cada sesion, `session_report.py` genera un informe Markdown en `docs/alfred-reports/` con las fases completadas, duraciones, equipo de agentes, evidencia recopilada y artefactos producidos. |
+
+## Comandos
+
+Toda la interfaz se controla desde la línea de comandos de Claude Code con el prefijo `/almundo-ia`:
+
+| Comando | Descripcion |
+|---------|-------------|
+| `/almundo-ia` | Asistente contextual: detecta el stack y la sesion activa, pregunta que necesitas. |
+| `/almundo-ia feature <desc>` | Ciclo completo de 6 fases o parcial. Almundo pregunta desde que fase arrancar. |
+| `/almundo-ia fix <desc>` | Correccion de bugs con flujo de 3 fases: diagnostico, correccion TDD, validacion. |
+| `/almundo-ia spike <tema>` | Investigacion tecnica sin compromiso: prototipos, benchmarks, documento de hallazgos. |
+| `/almundo-ia ship` | Release: auditoria final paralela, changelog, versionado semantico, despliegue. |
+| `/almundo-ia audit` | Auditoria completa con 4 agentes en paralelo: calidad, seguridad, arquitectura, documentacion. |
+| `/almundo-ia config` | Configurar autonomia, stack, compliance, personalidad, agentes opcionales y memoria persistente. |
+| `/almundo-ia status` | Fase actual, fases completadas con duracion, gate pendiente y agente activo. |
+| `/almundo-ia update` | Comprobar si hay version nueva y actualizar el plugin. |
+| `/almundo-ia help` | Referencia completa de comandos, agentes y flujos. |
+
+### Ejemplo de uso
+
+```
+> /almundo-ia feature sistema de autenticación con OAuth2
+
+Almundo activa el flujo de 6 fases:
+  1. Producto    -- PRD con historias de usuario y criterios de aceptación
+  2. Arquitectura -- Diseño de componentes, ADRs, threat model en paralelo
+  3. Desarrollo  -- Implementación TDD (rojo-verde-refactor)
+  4. Calidad     -- Code review + OWASP scan + compliance check + SBOM
+  5. Documentación -- API docs, guía de usuario, changelog
+  6. Entrega     -- Pipeline CI/CD, Docker, deploy
+
+Cada transición entre fases requiere superar la quality gate correspondiente.
+```
+
+## Arquitectura
+
+### Agentes de nucleo (9)
+
+El plugin implementa 9 agentes de nucleo, siempre activos, cada uno con un system prompt especializado, un conjunto de herramientas definido y un modelo asignado segun la complejidad de su tarea:
+
+| Agente | Rol | Modelo | Responsabilidad |
+|--------|-----|--------|-----------------|
+| **Alfred** | Orquestador | opus | Coordina flujos, activa agentes, evalua gates entre fases |
+| **SonIA** | Project Manager | sonnet | Descompone PRD en tareas, kanban con MD, trazabilidad criterio-tarea-test-doc, informes de progreso |
+| **El buscador de problemas** | Product Owner | opus | PRDs, historias de usuario, criterios de aceptacion, analisis competitivo |
+| **El dibujante de cajas** | Arquitecto | opus | Diseno de sistemas, ADRs, diagramas Mermaid, matrices de decision |
+| **El artesano** | Senior Dev | opus | Implementacion TDD estricto, refactoring, commits atomicos |
+| **El paranoico** | Security Officer | opus | OWASP Top 10, threat modeling STRIDE, SBOM, compliance RGPD/NIS2/CRA |
+| **El rompe-cosas** | QA Engineer | sonnet | Test plans, code review, testing exploratorio, integracion, E2E, regresion |
+| **El fontanero** | DevOps Engineer | sonnet | Docker multi-stage, CI/CD, deploy, monitoring, observabilidad |
+| **El escriba** | Tech Writer | sonnet | Fase 3b: cabeceras, docstrings, comentarios inline. Fase 5: API docs, arquitectura, guias, changelogs |
+
+Los agentes con modelo `opus` realizan tareas que requieren razonamiento complejo (diseno, seguridad, implementacion). Los agentes con modelo `sonnet` cubren tareas estructuradas con patrones mas predecibles (QA, infra, documentacion).
+
+### Agentes opcionales (8)
+
+Agentes predefinidos que el usuario activa segun las necesidades de su proyecto con `/almundo-ia config`. Se sugieren automaticamente en funcion del stack detectado. Desde v0.3.6, el orquestador tambien propone agentes opcionales de forma dinamica al arrancar cada flujo, analizando la descripcion de la tarea con keywords contextuales y combinandolas con las senales del proyecto. La seleccion dinamica es efimera (solo para esa sesion) y no modifica la configuracion persistente. Mas detalles en la [documentacion de configuracion](docs/configuration.md#composicion-dinamica-de-equipo).
+
+| Agente | Rol | Cuando es util |
+|--------|-----|----------------|
+| **Data Engineer** | Ingeniero de datos | Proyectos con base de datos, ORM, migraciones |
+| **UX Reviewer** | Revisor de UX | Proyectos con frontend (React, Vue, Svelte, etc.) |
+| **Performance Engineer** | Ingeniero de rendimiento | Proyectos grandes o con requisitos de rendimiento |
+| **GitHub Manager** | Gestor de GitHub | Cualquier proyecto con repositorio en GitHub |
+| **SEO Specialist** | Especialista SEO | Proyectos web con contenido publico |
+| **Copywriter** | Copywriter | Proyectos con textos publicos: landing, emails, onboarding |
+| **El Bibliotecario** | Consultas historicas | Proyectos con memoria persistente activa |
+| **La Interprete** | Especialista i18n | Proyectos multilingues: claves, formatos, cadenas hardcodeadas |
+
+### Skills (60)
+
+Cada skill es una habilidad concreta que un agente ejecuta. Estan organizados por dominio:
+
+```
+skills/
+  producto/          -- write-prd, user-stories, acceptance-criteria, competitive-analysis
+  arquitectura/      -- write-adr, choose-stack, design-system, evaluate-dependencies
+  desarrollo/        -- tdd-cycle, explore-codebase, refactor, code-review-response
+  seguridad/         -- threat-model, dependency-audit, security-review, compliance-check, sbom-generate
+  calidad/           -- test-plan, code-review, exploratory-testing, regression-check
+  devops/            -- dockerize, ci-cd-pipeline, deploy-config, monitoring-setup
+  documentación/     -- api-docs, architecture-docs, user-guide, changelog
+```
+
+### Hooks (11)
+
+Los hooks interceptan eventos del ciclo de vida de Claude Code para aplicar validaciones automaticas:
+
+| Hook | Evento | Funcion |
+|------|--------|---------|
+| `session-start.sh` | `SessionStart` | Detecta stack tecnologico, inyecta contexto de sesion y memoria persistente |
+| `stop-hook.py` | `Stop` | Genera resumen e informe de sesion con fases completadas y pendientes |
+| `secret-guard.sh` | `PreToolUse` (Write/Edit) | Bloquea escritura de secretos (API keys, tokens, passwords) |
+| `dangerous-command-guard.py` | `PreToolUse` (Bash) | Bloquea comandos destructivos (rm -rf /, force push, DROP DATABASE, etc.) |
+| `sensitive-read-guard.py` | `PreToolUse` (Read) | Avisa al leer ficheros sensibles (claves privadas, .env, credenciales) |
+| `quality-gate.py` | `PostToolUse` (Bash) | Verifica que los tests pasen despues de ejecuciones de Bash |
+| `evidence-guard.py` | `PostToolUse` (Bash) | Registra evidencia de ejecucion de tests para verificacion de gates |
+| `dependency-watch.py` | `PostToolUse` (Write/Edit) | Detecta dependencias nuevas y notifica al security officer |
+| `spelling-guard.py` | `PostToolUse` (Write/Edit) | Detecta palabras castellanas sin tilde al escribir o editar ficheros |
+| `activity-capture.py` | Multiples | Captura automatica de actividad, commits e iteraciones en la memoria persistente |
+| `memory-compact.py` | `PreCompact` | Protege decisiones criticas durante la compactacion de contexto |
+
+### Templates (7)
+
+Plantillas estandarizadas que los agentes usan para generar artefactos con estructura consistente:
+
+- `prd.md` -- Product Requirements Document
+- `adr.md` -- Architecture Decision Record
+- `test-plan.md` -- Plan de testing por riesgo
+- `threat-model.md` -- Modelado de amenazas STRIDE
+- `sbom.md` -- Software Bill of Materials
+- `changelog-entry.md` -- Entrada de changelog (Keep a Changelog)
+- `release-notes.md` -- Notas de release con resumen ejecutivo
+
+### Core (5 modulos)
+
+El nucleo del plugin esta implementado en Python con tests unitarios:
+
+| Modulo | Funcion |
+|--------|---------|
+| `orchestrator.py` | Maquina de estados de flujos, gestion de sesiones, evaluacion de gates, modo autopilot, loop iterativo |
+| `personality.py` | Motor de personalidad: frases, tono, anuncios, formato de veredicto |
+| `config_loader.py` | Carga de configuracion, deteccion de stack, preferencias de proyecto |
+| `memory.py` | Base de datos SQLite de memoria persistente: decisiones, commits, iteraciones, eventos |
+| `session_report.py` | Generacion de informes de sesion en Markdown con fases, evidencia y artefactos |
+
+```bash
+# Ejecutar tests
+python3 -m pytest tests/ -v
+```
+
+## Quality gates
+
+Las quality gates son puntos de control infranqueables entre fases. Si una gate no se supera, el flujo se detiene. No hay excepciones, no hay modo de saltárselas:
+
+| Gate | Condición |
+|------|-----------|
+| PRD aprobado | El usuario valida el PRD antes de pasar a arquitectura |
+| Diseño aprobado | El usuario aprueba el diseño Y el security officer lo valida |
+| Tests en verde | Todos los tests pasan antes de pasar a calidad |
+| Evidencia verificada | Las afirmaciones de tests deben estar respaldadas por salida real registrada por `evidence-guard.py` |
+| Loop iterativo | Si una gate falla, se reintenta hasta 5 veces con feedback antes de escalar al usuario |
+| QA + seguridad | El QA engineer y el security officer aprueban en paralelo |
+| Documentación completa | Todos los artefactos están documentados |
+| Pipeline verde | CI/CD verde, sin usuario root en contenedor, sin secretos en imagen |
+
+Cada gate produce un veredicto formal: **APROBADO**, **APROBADO CON CONDICIONES** o **RECHAZADO**, con hallazgos bloqueantes y próxima acción recomendada.
+
+## Compliance
+
+El plugin integra verificaciones de compliance europeo en el flujo de desarrollo:
+
+- **RGPD** -- Protección de datos desde el diseño. Verificación de base legal, minimización de datos, derechos de los interesados.
+- **NIS2** -- Directiva de ciberseguridad para operadores esenciales. Gestión de riesgos, notificación de incidentes, cadena de suministro.
+- **CRA** -- Cyber Resilience Act. Requisitos de ciber-resiliencia para productos digitales con componentes conectados.
+- **OWASP Top 10** -- Verificación sistemática de las 10 vulnerabilidades más explotadas en cada revisión de seguridad.
+- **SBOM** -- Generación automática del Software Bill of Materials con inventario de dependencias, licencias y CVEs conocidos.
+
+## Detección de stack
+
+El hook `session-start.sh` analiza el directorio de trabajo al iniciar sesión y detecta automáticamente:
+
+| Lenguaje | Señales | Ecosistema |
+|----------|---------|------------|
+| Node.js | `package.json` | npm, pnpm, bun, yarn -- Express, Next.js, Fastify, Hono |
+| Python | `pyproject.toml`, `requirements.txt` | pip, poetry, uv -- Django, Flask, FastAPI |
+| Rust | `Cargo.toml` | cargo -- Actix, Axum, Rocket |
+| Go | `go.mod` | go mod -- Gin, Echo, Fiber |
+| Ruby | `Gemfile` | bundler -- Rails, Sinatra |
+| Elixir | `mix.exs` | mix -- Phoenix |
+| Java / Kotlin | `pom.xml`, `build.gradle` | Maven, Gradle -- Spring Boot, Quarkus, Micronaut |
+| PHP | `composer.json` | Composer -- Laravel, Symfony |
+| C# / .NET | `*.csproj`, `*.sln` | dotnet, NuGet -- ASP.NET, Blazor |
+| Swift | `Package.swift` | SPM -- Vapor |
+
+## Memoria persistente
+
+A partir de v0.2.0, el plugin original puede recordar decisiones, commits e iteraciones entre sesiones. La memoria se almacena en una base de datos SQLite local (`.claude/almundo-memory.db`) dentro de cada proyecto, sin dependencias externas ni servicios remotos. La v0.2.3 anade etiquetas, estado y relaciones entre decisiones, auto-captura de commits, filtros avanzados de busqueda y exportacion/importacion.
+
+La activacion es opcional y se gestiona con `/almundo-ia config`. Una vez activa, el hook `activity-capture.py` captura eventos automaticamente en multiples puntos del ciclo de vida: iteraciones, fases, commits (SHA, autor, ficheros afectados) y actividad general de la sesion. Las decisiones arquitectonicas se registran a traves del agente **El Bibliotecario** o del servidor MCP integrado.
+
+Funcionalidades principales:
+
+- **Trazabilidad completa**: problema, decision, commit y validacion enlazados con IDs referenciables.
+- **Busqueda avanzada**: texto completo con FTS5, filtros temporales (`since`/`until`), por etiquetas y por estado (`active`/`superseded`/`deprecated`).
+- **Servidor MCP**: 15 herramientas accesibles desde cualquier agente (buscar, registrar, consultar, estadisticas, gestion de iteraciones, ciclo de vida de decisiones, validacion de integridad, export/import).
+- **El Bibliotecario**: agente opcional que responde consultas historicas citando siempre las fuentes con formato `[D#id]`, `[C#sha]`, `[I#id]`. Gestiona el ciclo de vida de decisiones y valida la integridad de la memoria.
+- **Contexto de sesion**: al iniciar, se inyectan las decisiones de la iteracion activa (o las 5 ultimas). Un hook PreCompact protege las decisiones criticas durante la compactacion.
+- **Export/Import**: exportar decisiones a Markdown (formato ADR), importar desde historial Git o ficheros ADR existentes.
+- **Seguridad**: sanitizacion de secretos con los mismos patrones que `secret-guard.sh`, permisos 0600 en el fichero de base de datos.
+- **Migracion automatica**: el esquema se actualiza automaticamente con backup previo al abrir bases de datos de versiones anteriores.
+
+
+## Estructura del proyecto
+
+```
+alfred-dev/
+  .claude-plugin/
+    plugin.json           # Manifiesto del plugin
+    marketplace.json      # Metadatos para el marketplace
+    mcp.json              # Servidor MCP de memoria persistente
+  agents/                 # 9 agentes de nucleo
+  agents/optional/        # 8 agentes opcionales
+  commands/               # 10 comandos /alfred
+  skills/                 # 60 skills en 13 dominios
+  hooks/                  # Hooks del ciclo de vida
+    hooks.json            # Configuracion de eventos
+  core/                   # Motor de orquestacion, memoria e informes (Python)
+  mcp/                    # Servidor MCP stdio (memoria persistente)
+  templates/              # 7 plantillas de artefactos
+  tests/                  # Tests unitarios (pytest)
+  site/                   # Landing page para GitHub Pages
+```
+
+## Configuración
+
+El plugin se configura por proyecto con el fichero `.claude/alfred-dev.local.md` en la raiz del proyecto (nombre heredado del proyecto original). Se gestiona con `/almundo-ia config`, que incluye descubrimiento contextual de agentes opcionales y activacion de memoria persistente:
+
+```yaml
+---
+autonomia:
+  producto: interactivo
+  arquitectura: interactivo
+  desarrollo: semi-autonomo
+  seguridad: autonomo
+  calidad: semi-autonomo
+  documentacion: autonomo
+  devops: semi-autonomo
+
+agentes_opcionales:
+  data-engineer: true
+  ux-reviewer: false
+  performance-engineer: false
+  github-manager: true
+  seo-specialist: false
+  copywriter: false
+  librarian: true
+  i18n-specialist: false
+
+memoria:
+  enabled: true
+  capture_decisions: true
+  capture_commits: true
+  retention_days: 365
+
+personalidad:
+  nivel_sarcasmo: 3
+  celebrar_victorias: true
+  insultar_malas_practicas: true
+---
+
+Notas adicionales del proyecto que Almundo debe tener en cuenta.
+```
+
+## Descargo de responsabilidad
+
+Este fork, **Almundo**, se basa en el proyecto de codigo abierto **alfred-dev**. No esta afiliado, patrocinado ni respaldado por **Anthropic** ni por el equipo de **Claude Code**.
+
+El software se proporciona «tal cual» (*as is*), sin garantias de ningun tipo, expresas o implicitas, incluyendo, entre otras, las garantias de comerciabilidad, adecuacion a un proposito particular y no infraccion. En ningun caso los autores o titulares de los derechos de autor seran responsables de reclamaciones, danos u otras responsabilidades derivadas del uso del software.
+
+Almundo IA ejecuta agentes que pueden crear, modificar y eliminar ficheros, ejecutar comandos en terminal e interactuar con servicios externos (GitHub, Docker, etc.). El usuario es responsable de revisar y aprobar las acciones que el plugin propone antes de su ejecucion.
+
+Los agentes utilizan modelos de lenguaje de gran tamano (LLM) que pueden generar contenido incorrecto, incompleto o inadecuado. Las salidas del plugin deben tratarse como sugerencias que requieren revision humana, no como resultados definitivos.
+
+## Licencia
+
+MIT
+
+---
+
+[Documentación completa](https://686f6c61.github.io/alfred-dev/) | [Código fuente](https://github.com/686f6c61/alfred-dev)
